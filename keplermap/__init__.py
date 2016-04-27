@@ -62,8 +62,10 @@ def get_kepler_field(season=1):
     return ccd_lst
 
 class KeplerMap(Axes):
-    def __init__(self, fig, rect, **kwargs):
+    def __init__(self, fig, rect=None, **kwargs):
 
+        if rect == None:
+            rect = [0.1,0.1,0.8,0.8]
         self.season = kwargs.pop('season',1)
         self.ra_direction = kwargs.pop('ra_direction',1)
         # center coordinate in (RA, Dec)
@@ -327,13 +329,6 @@ class KeplerMap(Axes):
         polygon = Polygon(np.array(xy), True, **kwargs)
         self.add_patch(polygon)
 
-    def plot_circle(self, center, radius, **kwargs):
-        x,y = self.__lambert(center[0], center[1])
-        xtop, ytop = self.__lambert(center[0], center[1]+radius)
-        rnew = math.sqrt((x-xtop)**2+(y-ytop)**2)
-        circle = Circle((x,y), radius=rnew, **kwargs)
-        self.add_patch(circle)
-
     def grid(self, b=None, which='major',axis='both',**kwargs):
         color     = kwargs.pop('color',mpl.rcParams['grid.color'])
         alpha     = kwargs.pop('alpha',mpl.rcParams['grid.alpha'])
@@ -396,15 +391,6 @@ class KeplerMap(Axes):
                 return None
         return y1
 
-    def test():
-        # plot background stars?
-        if bkg_stars:
-            self.plot_bkg_stars()
-
-        # plot background clusters?
-        if bkg_clusters:
-            self.plot_bkg_clusters()
-
     def plot_field_stars(self, V_limit=None, *args, **kwargs):
         '''
         plot background stars in Kepler field
@@ -461,26 +447,10 @@ class KeplerMap(Axes):
             ra     = float(g[1])
             dec    = float(g[2])
             radius = float(g[3])/60.
-            self.plot_circle([ra,dec], radius, color='w', ls='dashed',lw=0.5,
-                    ,edgecolor='k')
+            self.plot_circle(ra,dec, radius, color='k', ls=':',lw=0.5)
         infile.close()
         
-
-    def plot_bkg_clusters(self):
-        clusters = [
-                ['NGC 6791', 290.221, 37.7717, 16.0],
-                ['NGC 6811', 294.321, 46.3883, 13.0],
-                ['NGC 6819', 295.325, 40.1867,  5.0],
-                ['NGC 6866', 300.925, 44.1583,  7.0],
-                ]
-        for cluster in clusters:
-            name = cluster[0]
-            ra   = cluster[1]
-            dec  = cluster[2]
-            r    = cluster[3]/60.0
-            self.plot_circle(ra,dec,r,'k-',lw=0.5,alpha=0.5)
-
-    def plot_circle2(self,ra0,dec0,radius,*args,**kwargs):
+    def plot_circle(self,ra0,dec0,radius,*args,**kwargs):
         '''
         plot a circle with given radius in Kepler field
         '''
@@ -498,20 +468,20 @@ class KeplerMap(Axes):
             ra2_lst.append(ra2)
             dec2_lst.append(dec2)
 
-        x_lst, y_lst = self.__lambert(ra2_lst,dec2_lst)
-        self.ax.plot(x_lst, y_lst, *args, **kwargs)
+        #x_lst, y_lst = self.__lambert(ra2_lst,dec2_lst)
+        self.plot(ra2_lst, dec2_lst, *args, **kwargs)
 
     def __rotate_sphere(self,ra,dec,DELTA_NGP,L_NCP):
         '''rotate shpere'''
         ALPHA_NGP = 0.0
-        AI     = deg_to_rad(90 - DELTA_NGP)
-        ALPHA0 = deg_to_rad(ALPHA_NGP + 90)
-        LON0   = deg_to_rad(L_NCP - 90)
+        AI     = (90. - DELTA_NGP)/180.*math.pi
+        ALPHA0 = (ALPHA_NGP + 90.)/180.*math.pi
+        LON0   = (L_NCP - 90.)/180.*math.pi
 
         MIN    = 1e-10
 
-        ra  = deg_to_rad(ra)
-        dec = deg_to_rad(dec)
+        ra  = ra/180.*math.pi
+        dec = dec/180.*math.pi
 
         ALat = math.sin(dec)*math.cos(AI) - \
                math.cos(dec)*math.sin(AI)*math.sin(ra-ALPHA0)
@@ -539,8 +509,8 @@ class KeplerMap(Axes):
         #if L >= 2.0*math.pi:
         #    L = L - 2.0*math.pi
         Lat = math.asin(ALat)
-        l = rad_to_deg(L)
-        b = rad_to_deg(Lat)
+        l = L/math.pi*180.
+        b = Lat/math.pi*180.
 
         return (l,b)
 
