@@ -26,3 +26,12 @@ plt.show()
 ```
 
 <img src="https://github.com/wangleon/astroplots/blob/master/keplermap/kepler_map.png" width=650>
+
+Night Chart
+-----------
+Below example shows the time of twilights in the year of 2019.
+Light and deep blue regions shows the time free of civil twilight and
+astronomical twilight, repsectively.
+Sunrise and sunset are shown in read.
+
+<img src="https://github.com/wangleon/astroplots/blob/master/night_chart/night_chart_wendelstein.png" width=700>
