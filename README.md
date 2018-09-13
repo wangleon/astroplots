@@ -30,8 +30,10 @@ plt.show()
 Night Chart
 -----------
 Below example shows the time of twilights in the year of 2019.
-Light and deep blue regions shows the time free of civil twilight and
+Light and deep blue regions are the time free of civil twilight and
 astronomical twilight, repsectively.
-Sunrise and sunset are shown in read.
+Sunrise and sunset are shown in red lines.
+Also shown in the figure is the transit time and date of full moon
+(solid yellow points).
 
-<img src="https://github.com/wangleon/astroplots/blob/master/night_chart/night_chart_wendelstein.png" width=700>
+<img src="https://github.com/wangleon/astroplots/blob/master/night_chart/night_chart_wendelstein.png" width=800>
