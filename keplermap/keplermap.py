@@ -329,7 +329,7 @@ class KeplerMap(Axes):
         polygon = Polygon(np.array(xy), True, **kwargs)
         self.add_patch(polygon)
 
-    def grid(self, b=None, which='major',axis='both',**kwargs):
+    def grid(self, b=None, which='major', axis='both', **kwargs):
         color     = kwargs.pop('color',mpl.rcParams['grid.color'])
         alpha     = kwargs.pop('alpha',mpl.rcParams['grid.alpha'])
         linestyle = kwargs.pop('linestyle',
