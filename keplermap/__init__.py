@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-import os,math
+import os
+import math
 import numpy as np
 import scipy.interpolate as intp
 import xml.dom.minidom as md
@@ -103,8 +103,8 @@ class KeplerMap(Axes):
         sin = np.sin
         cos = np.cos
         tan = np.tan
-        cot = lambda(x): 1./tan(x)
-        sec = lambda(x): 1./cos(x)
+        cot = lambda x: 1./tan(x)
+        sec = lambda x: 1./cos(x)
 
         ra   = np.deg2rad(ra)
         dec  = np.deg2rad(dec)
@@ -132,8 +132,8 @@ class KeplerMap(Axes):
         sin = np.sin
         cos = np.cos
         tan = np.tan
-        cot = lambda(x): 1./tan(x)
-        sec = lambda(x): 1./cos(x)
+        cot = lambda x: 1./tan(x)
+        sec = lambda x: 1./cos(x)
 
         ra0  = np.deg2rad(self.center[0])
         dec0 = np.deg2rad(self.center[1])
@@ -410,8 +410,8 @@ class KeplerMap(Axes):
             g = row.split('|')
             HD        = int(g[0])
             HR        = int(g[1])
-            Flamsteed = g[2].strip().decode('utf-8')
-            Bayer     = g[3].strip().decode('utf-8')
+            Flamsteed = g[2].strip()
+            Bayer     = g[3].strip()
             ra        = float(g[4])
             dec       = float(g[5])
             vmag      = float(g[6])
