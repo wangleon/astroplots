@@ -63,8 +63,8 @@ def main():
     dt1_lst, dt2_lst = [], []
     for idt, dt in enumerate(datetime_lst):
         myplace.date = dt
-        t1 = myplace.previous_setting(ep.Sun(), use_center=True)
-        t2 = myplace.next_rising(ep.Sun(), use_center=True)
+        t1 = myplace.previous_setting(sun, use_center=True)
+        t2 = myplace.next_rising(sun, use_center=True)
         ut_offset1 = correct_ut(t1.datetime())
         ut_offset2 = correct_ut(t2.datetime())
         dt1 = t1.datetime() + ut_offset1 - dt
@@ -78,8 +78,8 @@ def main():
     dt1_lst, dt2_lst = [], []
     for idt, dt in enumerate(datetime_lst):
         myplace.date = dt
-        t1 = myplace.previous_setting(ep.Sun(), use_center=True)
-        t2 = myplace.next_rising(ep.Sun(), use_center=True)
+        t1 = myplace.previous_setting(sun, use_center=True)
+        t2 = myplace.next_rising(sun, use_center=True)
         ut_offset1 = correct_ut(t1.datetime())
         ut_offset2 = correct_ut(t2.datetime())
         dt1 = t1.datetime() + ut_offset1 - dt
@@ -147,13 +147,14 @@ def main():
             transit = date0 + delta_dt
 
             if prev_transit is None or \
-                (transit - prev_transit).total_seconds() < 12*3600:
+                abs((transit - prev_transit).total_seconds()) < 12*3600:
                 transit_lst.append(transit)
                 real_transit_lst.append(real_transit_dt)
                 dt_lst.append(dt)
             else:
                 item = (transit_lst, dt_lst, real_transit_lst)
                 transit_data.append(item)
+                # reset the list
                 transit_lst = []
                 real_transit_lst = []
                 dt_lst = []
@@ -180,6 +181,23 @@ def main():
                 ax.text(newtransit_lst[-1],
                         dt_lst[-1] - datetime.timedelta(days=2),
                         '%02dh'%ra, color='k', alpha=0.6)
+
+            # add texts of RA in hour on the left
+            dist_lst = np.array([abs((x1-t).total_seconds()) for t in newtransit_lst])
+            if dist_lst.min() < 2*3600:
+                i = dist_lst.argmin()
+                if i>0 and i<len(dist_lst):
+                    ax.text(x1+datetime.timedelta(minutes=8), dt_lst[i],
+                        '%02dh'%ra, color='k', alpha=0.6)
+
+            # add texts of Dec in hour on the right
+            dist_lst = np.array([abs((x2-t).total_seconds()) for t in newtransit_lst])
+            if dist_lst.min() < 2*3600:
+                i = dist_lst.argmin()
+                if i>0 and i<len(dist_lst):
+                    ax.text(x2-datetime.timedelta(minutes=30), dt_lst[i],
+                        '%02dh'%ra, color='k', alpha=0.6)
+
 
     # set x and y axis to date
     ax.xaxis_date()
