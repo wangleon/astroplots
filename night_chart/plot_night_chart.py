@@ -129,7 +129,8 @@ def main():
         # generate a fake star with (RA, Dec) = (ra, 0.0)
         eq = SkyCoord(ra=ra*15, dec=0., frame='icrs', unit='deg')
         string = 'NONAME,f|M|g2,%s,%s,5.0,2000'%(
-                eq.ra.to_string(sep=':'), eq.dec.to_string(sep=':'))
+                eq.ra.to_string(unit='h', sep=':'),
+                eq.dec.to_string(unit='deg',sep=':'))
         star = ep.readdb(string)
         transit_lst = []
         real_transit_lst = []
