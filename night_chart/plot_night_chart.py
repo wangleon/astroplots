@@ -35,8 +35,8 @@ def main():
     datenums = mdates.date2num(datetime_lst)
 
     # initialize figure
-    fig = plt.figure(dpi=150,figsize=(12,10))
-    ax = fig.add_axes([0.1, 0.1, 0.85, 0.85])
+    fig = plt.figure(dpi=150,figsize=(10,14))
+    ax = fig.add_axes([0.12, 0.08, 0.82, 0.86])
 
     # set x range
     x1 = date0 - datetime.timedelta(hours=9)
@@ -216,11 +216,12 @@ def main():
     ax.set_xlim(x1, x2)
     ax.set_ylim(datenums[-1], datenums[0])
 
-    ax.grid(True, ls='--', alpha=0.5)
-    ax.set_xlabel('Central European Time (CET)')
-    ax.set_ylabel('Date')
+    ax.grid(True, ls='--', alpha=0.5, which='both')
+    ax.set_xlabel('Central European Time (CET)', fontsize=14)
+    ax.set_ylabel('Date', fontsize=14)
 
     fig.savefig('night_chart_wendelstein.png')
+    fig.savefig('night_chart_wendelstein.pdf')
 
     plt.show()
 
