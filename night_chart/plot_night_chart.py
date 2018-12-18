@@ -45,6 +45,14 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
         ut_offset2 = correct_ut(t2.datetime())
         dt1 = t1.datetime() + ut_offset1 - dt
         dt2 = t2.datetime() + ut_offset2 - dt
+
+        # if dt2 > 1 day, move date to 1 day forward
+        if dt2 > datetime.timedelta(days=1):
+            myplace.date = dt - datetime.timedelta(days=1)
+            t2 = myplace.next_rising(sun, use_center=True)
+            ut_offset2 = correct_ut(t2.datetime())
+            dt2 = t2.datetime() + ut_offset2 - dt
+
         dt1_lst.append(date0 + dt1)
         dt2_lst.append(date0 + dt2)
     ax.plot(dt1_lst, datenums, '-', color='C3', alpha=0.5)
@@ -61,6 +69,14 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
         ut_offset2 = correct_ut(t2.datetime())
         dt1 = t1.datetime() + ut_offset1 - dt
         dt2 = t2.datetime() + ut_offset2 - dt
+
+        # if dt2 > 1 day, move date to 1 day forward
+        if dt2 > datetime.timedelta(days=1):
+            myplace.date = dt - datetime.timedelta(days=1)
+            t2 = myplace.next_rising(sun, use_center=True)
+            ut_offset2 = correct_ut(t2.datetime())
+            dt2 = t2.datetime() + ut_offset2 - dt
+
         dt1_lst.append(date0 + dt1)
         dt2_lst.append(date0 + dt2)
     ax.fill_betweenx(datenums, dt1_lst, dt2_lst, color='C0', alpha=0.2, lw=0)
@@ -76,6 +92,14 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
         ut_offset2 = correct_ut(t2.datetime())
         dt1 = t1.datetime() + ut_offset1 - dt
         dt2 = t2.datetime() + ut_offset2 - dt
+
+        # if dt2 > 1 day, move date to 1 day forward
+        if dt2 > datetime.timedelta(days=1):
+            myplace.date = dt - datetime.timedelta(days=1)
+            t2 = myplace.next_rising(sun, use_center=True)
+            ut_offset2 = correct_ut(t2.datetime())
+            dt2 = t2.datetime() + ut_offset2 - dt
+
         dt1_lst.append(date0 + dt1)
         dt2_lst.append(date0 + dt2)
     ax.fill_betweenx(datenums, dt1_lst, dt2_lst, color='C0', alpha=0.2, lw=0)
@@ -137,6 +161,8 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
             real_transit_dt = myplace.previous_transit(star).datetime()
             delta_dt = real_transit_dt - dt
             transit = date0 + delta_dt
+            if delta_dt + correct_ut(dt) > datetime.timedelta(hours=12):
+                transit = transit - datetime.timedelta(hours=24)
 
             if prev_transit is None or \
                 abs((transit - prev_transit).total_seconds()) < 12*3600:
@@ -159,8 +185,14 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
         # plot
         for transit_lst, dt_lst, real_transit_lst in transit_data:
             ut_offset_lst = [correct_ut(dt) for dt in real_transit_lst]
-            newtransit_lst = [t1+to for t1, to in zip(transit_lst, ut_offset_lst)]
+
+            newtransit_lst = []
+            for t1, to in zip(transit_lst, ut_offset_lst):
+                newtransit_lst.append(t1+to)
+
             ax.plot(newtransit_lst, dt_lst, '--', color='k', alpha=0.2, lw=1)
+            # for _t1, _t2 in zip(transit_lst, newtransit_lst):
+            #    print(ra, _t1, _t2)
 
             # add texts of RA in hour on the top
             if dt_lst[0] == datetime_lst[0] and x1 < newtransit_lst[0] < x2:
@@ -196,8 +228,8 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
     ax.yaxis_date()
 
     # set ticks
-    ax.xaxis.set_major_locator(mdates.HourLocator())
-    ax.xaxis.set_minor_locator(mdates.MinuteLocator(byminute=np.arange(0,10,60)))
+    ax.xaxis.set_major_locator(mdates.HourLocator(byhour=np.arange(0,24,2)))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=np.arange(0,24,1)))
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
     ax.yaxis.set_major_locator(mdates.MonthLocator())
@@ -208,7 +240,8 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
     ax.set_xlim(x1, x2)
     ax.set_ylim(datenums[-1], datenums[0])
 
-    ax.grid(True, ls='--', alpha=0.5, which='both')
+    ax.grid(True, ls='--', alpha=0.6, lw=1,  which='major')
+    ax.grid(True, ls='--', alpha=0.5, lw=0.5, which='minor')
     ax.set_xlabel(xlabel, fontsize=14)
     ax.set_ylabel('Date', fontsize=14)
 
@@ -230,7 +263,7 @@ def plot_wst():
     latitude  = '47:42:13.1'
     elevation = 1950
     xlabel = 'Central European Time (CET)'
-    figname = 'night_chart_wendelstein.pdf'
+    figname = 'night_chart_wendelstein.png'
     plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, figname)
 
 def plot_xinglong():
