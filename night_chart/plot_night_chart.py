@@ -7,23 +7,15 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.colors as mcolors
 
-def correct_ut(dt):
-    # correct UT to Central European Time in 2019
-    # returns +2 or +1 (CET - UT)
-    # so CET = CET + correct_ut(dt)
-    if dt > datetime.datetime(2019, 3, 31, 2, 0, 0) and \
-       dt < datetime.datetime(2019, 10,27, 3, 0, 0):
-        return datetime.timedelta(hours=2)
-    else:
-        return datetime.timedelta(hours=1)
 
-def main():
+def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
+    figname):
 
     # set observing place
     myplace = ep.Observer()
-    myplace.long = '12:00:43.4'
-    myplace.lat  = '47:42:13.1'
-    myplace.elevation = 1950
+    myplace.long = longitude
+    myplace.lat  = latitude
+    myplace.elevation = elevation
 
     # set objects
     sun  = ep.Sun()
@@ -217,14 +209,44 @@ def main():
     ax.set_ylim(datenums[-1], datenums[0])
 
     ax.grid(True, ls='--', alpha=0.5, which='both')
-    ax.set_xlabel('Central European Time (CET)', fontsize=14)
+    ax.set_xlabel(xlabel, fontsize=14)
     ax.set_ylabel('Date', fontsize=14)
 
-    fig.savefig('night_chart_wendelstein.png')
-    fig.savefig('night_chart_wendelstein.pdf')
+    fig.savefig(figname)
 
-    plt.show()
+def plot_wst():
 
+    def correct_ut(dt):
+        # correct UT to Central European Time in 2019
+        # returns +2 or +1 (CET - UT)
+        # so CET = CET + correct_ut(dt)
+        if dt > datetime.datetime(2019, 3, 31, 2, 0, 0) and \
+           dt < datetime.datetime(2019, 10,27, 3, 0, 0):
+            return datetime.timedelta(hours=2)
+        else:
+            return datetime.timedelta(hours=1)
+
+    longitude = '12:00:43.4'
+    latitude  = '47:42:13.1'
+    elevation = 1950
+    xlabel = 'Central European Time (CET)'
+    figname = 'night_chart_wendelstein.pdf'
+    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, figname)
+
+def plot_xinglong():
+
+    def correct_ut(dt):
+        # correct UT to Beijing Time
+        # returns +8 (BJ - UT)
+        return datetime.timedelta(hours=8)
+
+    longitude = '117:34:28.35'
+    latitude  = '40:23:45.36'
+    elevation = 900
+    xlabel = 'Beijing Time (UTC + 8)'
+    figname = 'night_chart_xinglong.png'
+    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, figname)
 
 if __name__=='__main__':
-    main()
+    plot_wst()
+    plot_xinglong()
