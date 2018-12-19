@@ -53,7 +53,7 @@ def calc_sun(myplace, horizon, local_datetime_lst, correct_ut, date0):
     
 
 def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
-    figname):
+    fignames):
 
     # set observing place
     myplace = ep.Observer()
@@ -62,7 +62,6 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
     myplace.elevation = elevation
 
     # set objects
-    sun  = ep.Sun()
     moon = ep.Moon()
 
     # set range of plot dates
@@ -259,7 +258,9 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
             loc = 'center left',
             )
 
-    fig.savefig(figname)
+    for figname in fignames:
+        fig.savefig(figname)
+    plt.close(fig)
 
 def plot_wst():
 
@@ -277,8 +278,8 @@ def plot_wst():
     latitude  = '47:42:13.1'
     elevation = 1950
     xlabel = 'Central European Time (CET)'
-    figname = 'night_chart_wendelstein.png'
-    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, figname)
+    fignames = ['night_chart_wendelstein.png', 'night_chart_wendelstein.pdf']
+    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, fignames)
 
 def plot_xinglong():
 
@@ -291,8 +292,8 @@ def plot_xinglong():
     latitude  = '40:23:45.36'
     elevation = 900
     xlabel = 'Beijing Time (UTC + 8)'
-    figname = 'night_chart_xinglong.png'
-    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, figname)
+    fignames = ['night_chart_xinglong.png', 'night_chart_xinglong.pdf']
+    plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel, fignames)
 
 if __name__=='__main__':
     plot_wst()
