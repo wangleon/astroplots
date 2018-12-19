@@ -7,6 +7,50 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.colors as mcolors
 
+def calc_sun(myplace, horizon, local_datetime_lst, correct_ut, date0):
+
+    sun  = ep.Sun()
+
+    # plot sun rise and sun set time
+    myplace.horizon=horizon
+    y_lst = []
+    dt1_lst, dt2_lst = [], []
+    for idt, dt in enumerate(local_datetime_lst):
+        ut_offset = correct_ut(dt)
+        ut = dt - ut_offset
+        myplace.date = ut
+        t1 = myplace.previous_setting(sun, use_center=True)
+        t2 = myplace.next_rising(sun, use_center=True)
+        midnight = datetime.datetime.combine(dt.date(), datetime.time.min)
+        dt1 = t1.datetime() + ut_offset - midnight
+        dt2 = t2.datetime() + ut_offset - midnight
+
+        if dt1 > datetime.timedelta(hours=12):
+            dt1 -= datetime.timedelta(hours=24)
+        elif dt1 < datetime.timedelta(hours=-12):
+            dt1 += datetime.timedelta(hours=24)
+        if dt2 > datetime.timedelta(hours=12):
+            dt2 -= datetime.timedelta(hours=24)
+        elif dt2 < datetime.timedelta(hours=-12):
+            dt2 += datetime.timedelta(hours=24)
+
+        # fix daylight saving time problem
+        if len(dt1_lst) > 0:
+            ddt = (date0 + dt1 - dt1_lst[-1]).total_seconds()
+            if ddt > 50*60:
+                y_lst.append(dt)
+                dt1_lst.append(date0 + dt1 - datetime.timedelta(hours=1))
+                dt2_lst.append(date0 + dt2 - datetime.timedelta(hours=1))
+            if ddt < -50*60:
+                y_lst.append(dt)
+                dt1_lst.append(date0 + dt1 + datetime.timedelta(hours=1))
+                dt2_lst.append(date0 + dt2 + datetime.timedelta(hours=1))
+
+        y_lst.append(dt)
+        dt1_lst.append(date0 + dt1)
+        dt2_lst.append(date0 + dt2)
+    return y_lst, dt1_lst, dt2_lst
+    
 
 def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
     figname):
@@ -23,8 +67,8 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
 
     # set range of plot dates
     date0 = datetime.datetime(2019,1,1,0,0,0)
-    local_datetime_lst = [date0 + datetime.timedelta(hours=2*i) for i in range(365*12)]
-    #local_datetime_lst = [date0 + datetime.timedelta(days=i) for i in range(365)]
+    #local_datetime_lst = [date0 + datetime.timedelta(hours=2*i) for i in range(365*12)]
+    local_datetime_lst = [date0 + datetime.timedelta(days=i) for i in range(365)]
     datenums = mdates.date2num(local_datetime_lst)
 
     # initialize figure
@@ -42,79 +86,22 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
 
     if plot_sun:
         # plot sun rise and sun set time
-        myplace.horizon=0
-        dt1_lst, dt2_lst = [], []
-        for idt, dt in enumerate(local_datetime_lst):
-            ut_offset = correct_ut(dt)
-            ut = dt - ut_offset
-            myplace.date = ut
-            t1 = myplace.previous_setting(sun, use_center=True)
-            t2 = myplace.next_rising(sun, use_center=True)
-            midnight = datetime.datetime.combine(dt.date(), datetime.time.min)
-            dt1 = t1.datetime() + ut_offset - midnight
-            dt2 = t2.datetime() + ut_offset - midnight
-
-            if dt1 > datetime.timedelta(hours=12):
-                dt1 -= datetime.timedelta(hours=24)
-            if dt2 > datetime.timedelta(hours=12):
-                dt2 -= datetime.timedelta(hours=24)
-
-            dt1_lst.append(date0 + dt1)
-            dt2_lst.append(date0 + dt2)
-        artist_sun, = ax.plot(dt1_lst, datenums, '-', color='C3', alpha=0.5)
-        ax.plot(dt2_lst, datenums, '-', color='C3', alpha=0.5)
+        y_lst, dt1_lst, dt2_lst = calc_sun(myplace, 0, local_datetime_lst, correct_ut, date0)
+        artist_sun, = ax.plot(dt1_lst, mdates.date2num(y_lst), '-', color='C3', alpha=0.7)
+        ax.plot(dt2_lst, mdates.date2num(y_lst), '-', color='C3', alpha=0.7)
 
     if plot_twg:
         # plot civilized twilight time
-        myplace.horizon='-6'
-        dt1_lst, dt2_lst = [], []
-        for idt, dt in enumerate(local_datetime_lst):
-            ut_offset = correct_ut(dt)
-            ut = dt - ut_offset
-            myplace.date = ut
-            t1 = myplace.previous_setting(sun, use_center=True)
-            t2 = myplace.next_rising(sun, use_center=True)
-            midnight = datetime.datetime.combine(dt.date(), datetime.time.min)
-            dt1 = t1.datetime() + ut_offset - midnight
-            dt2 = t2.datetime() + ut_offset - midnight
-
-            if dt1 > datetime.timedelta(hours=12):
-                dt1 -= datetime.timedelta(hours=24)
-            if dt2 > datetime.timedelta(hours=12):
-                dt2 -= datetime.timedelta(hours=24)
-
-            dt1_lst.append(date0 + dt1)
-            dt2_lst.append(date0 + dt2)
-        artist_ctwg = ax.fill_betweenx(datenums, dt1_lst, dt2_lst, color='C0',
+        y_lst, dt1_lst, dt2_lst = calc_sun(myplace, '-6', local_datetime_lst, correct_ut, date0)
+        artist_ctwg = ax.fill_betweenx(mdates.date2num(y_lst), dt1_lst, dt2_lst, color='C0',
                 alpha=0.2, lw=0)
 
         # plot astronomical twilight time
-        myplace.horizon='-18'
-        dt1_lst, dt2_lst = [], []
-        for idt, dt in enumerate(local_datetime_lst):
-            ut_offset = correct_ut(dt)
-            ut = dt - ut_offset
-            myplace.date = ut
-            t1 = myplace.previous_setting(sun, use_center=True)
-            t2 = myplace.next_rising(sun, use_center=True)
-            midnight = datetime.datetime.combine(dt.date(), datetime.time.min)
-            dt1 = t1.datetime() + ut_offset - midnight
-            dt2 = t2.datetime() + ut_offset - midnight
-
-            if dt1 > datetime.timedelta(hours=12):
-                dt1 -= datetime.timedelta(hours=24)
-            elif dt1 < datetime.timedelta(hours=-12):
-                dt1 += datetime.timedelta(hours=24)
-
-            if dt2 > datetime.timedelta(hours=12):
-                dt2 -= datetime.timedelta(hours=24)
-
-            dt1_lst.append(date0 + dt1)
-            dt2_lst.append(date0 + dt2)
-        ax.fill_betweenx(datenums, dt1_lst, dt2_lst, color='C0', alpha=0.2, lw=0)
+        y_lst, dt1_lst, dt2_lst = calc_sun(myplace, '-18', local_datetime_lst, correct_ut, date0)
+        ax.fill_betweenx(mdates.date2num(y_lst), dt1_lst, dt2_lst, color='C0', alpha=0.2, lw=0)
 
         # plot a fake twilight artist
-        artist_atwg = ax.fill_betweenx(datenums-1e3,dt1_lst, dt2_lst,
+        artist_atwg = ax.fill_betweenx(mdates.date2num(y_lst)-1e3,dt1_lst, dt2_lst,
                 color='C0', alpha=0.36, lw=0) 
 
     if plot_moon:
@@ -144,9 +131,6 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
             transit_dt = myplace.previous_transit(moon).datetime()
             ut_offset = correct_ut(transit_dt)
             midnight = datetime.datetime.combine(transit_dt.date(), datetime.time.min)
-            #delta_dt = transit_dt + ut_offset - datetime.datetime(transit_dt.year,
-            #                                          transit_dt.month,
-            #                                          transit_dt.day, 0,0,0)
             delta_dt = transit_dt + ut_offset - midnight
             if delta_dt.total_seconds()>12*3600:
                 delta_dt -= datetime.timedelta(hours=24)
@@ -159,7 +143,7 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
 
     if plot_ra:
         # plot RA lines
-        for ra in np.arange(0, 24, 3):
+        for ra in np.arange(0, 24, 2):
             # generate a fake star with (RA, Dec) = (ra, 0.0)
             eq = SkyCoord(ra=ra*15, dec=0., frame='icrs', unit='deg')
             string = 'NONAME,f|M|g2,%s,%s,5.0,2000'%(
@@ -167,7 +151,6 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
                     eq.dec.to_string(unit='deg',sep=':'))
             star = ep.readdb(string)
             transit_lst = []
-            real_transit_lst = []
             dt_lst = []
  
             transit_data = []
@@ -176,7 +159,8 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
                 midnight = datetime.datetime.combine(dt.date(), datetime.time.min)
                 ut_offset = correct_ut(dt)
                 ut = dt - ut_offset
-                myplace.date = ut
+                myplace.date = ut + datetime.timedelta(hours=12)
+                # add 12 hours to aviod the transit time jump problem
                 star.compute(myplace)
  
                 real_transit_dt = myplace.previous_transit(star).datetime()
@@ -189,26 +173,35 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
  
                 if prev_transit is None or \
                     abs((transit - prev_transit).total_seconds()) < 12*3600:
+
+                    # fix daylight saving time problem
+                    if prev_transit is not None and \
+                        (transit - prev_transit).total_seconds() > 50*60:
+                        transit_lst.append(transit - datetime.timedelta(hours=1))
+                        dt_lst.append(dt)
+                    if prev_transit is not None and \
+                        (transit - prev_transit).total_seconds() < -50*60:
+                        transit_lst.append(transit + datetime.timedelta(hours=1))
+                        dt_lst.append(dt)
+
                     transit_lst.append(transit)
-                    real_transit_lst.append(real_transit_dt)
                     dt_lst.append(dt)
                 else:
-                    item = (transit_lst, dt_lst, real_transit_lst)
+                    item = (transit_lst, dt_lst)
                     transit_data.append(item)
                     # reset the list
                     transit_lst = []
-                    real_transit_lst = []
                     dt_lst = []
                     prev_transit = None
                 prev_transit = transit
             if len(dt_lst)>0:
-                item = (transit_lst, dt_lst, real_transit_lst)
+                item = (transit_lst, dt_lst)
                 transit_data.append(item)
  
-            # plot
-            for transit_lst, dt_lst, real_transit_lst in transit_data:
+            # plot RA transit lines (also local sidereal time)
+            for transit_lst, dt_lst in transit_data:
  
-                artist_ra, = ax.plot(transit_lst, dt_lst, '-', color='k', alpha=0.2, lw=0.8)
+                artist_ra, = ax.plot(transit_lst, dt_lst, '--', color='k', alpha=0.2, lw=1)
  
                 # add texts of RA in hour on the top
                 if dt_lst[0] == local_datetime_lst[0] and x1 < transit_lst[0] < x2:
@@ -262,7 +255,7 @@ def plot_nightchart(longitude, latitude, elevation, correct_ut, xlabel,
     ax.set_ylabel('Date', fontsize=14)
 
     ax.legend((artist_sun, artist_moon, artist_ctwg, artist_atwg, artist_ra),
-            ('Sunsets & Sunrises', 'Tranists of Full Moon', 'Civilized Twilight', 'Astronomical Twilight', 'Local Sidereal Time'),
+            ('Sunsets & Sunrises', 'Transits of Full Moon', 'Civilized Twilight', 'Astronomical Twilight', 'Local Sidereal Time'),
             loc = 'center left',
             )
 
